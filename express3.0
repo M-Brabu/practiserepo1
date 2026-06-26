@@ -1,0 +1,68 @@
+const express = require('express')
+const morgan = require('morgan')
+// import {validatorSchemaFood} from './utils/validatorSchemaFood'
+// import { validationResult,matchedData,checkSchema } from 'express-validator'
+const {validatorSchemaFood}=require('./utils/validatorSchemaFood')
+const { validationResult,matchedData,checkSchema } = require('express-validator')
+const app = express()
+const PORT = 5000
+app.listen(PORT,()=>{console.log(`server running on ${PORT}`)})
+app.use(express.json())
+app.use(morgan('dev'))
+let foods =[{id:1,name:"burger",price:10},
+           {id:2,name:"puf",price:6},
+           {id:3,name:"cake",price:10}]
+
+const getIndex = (req,res,next)=> {
+      const idParam = Number(req.params.id)
+      if(isNaN(idParam)){
+        return res.status(400).send("Bad Request !")
+      }
+      const foodID = foods.findIndex((food)=>food.id === idParam)
+      if(foodID === -1){
+        return res.status(404).send("Food Not Found")
+      }
+      req.foodID = foodID
+      next()
+}
+// const getBody = (req,res,next)=>{
+//   const body = req.body
+//   if(body === undefined){
+//     res.send("Data Not Recieved !!!")
+//   }
+// }
+app.get("/api/foods",(req,res)=>{
+    res.json(foods)
+})
+app.get("/api/foods/:id",getIndex,(req,res)=>{
+    const foodID = req.foodID
+    res.json(foods[foodID])
+})
+app.post("/api/foods",checkSchema(validatorSchemaFood),(req,res)=>{
+  const result = validationResult(req)
+  if(!result.isEmpty()){
+    return res.status(400).send(result)
+  }
+  const body = matchedData(req)
+  // const body = req.body
+  foods.push({id:foods.length+1,...body})
+  return res.status(201).send("push done")
+})
+app.put("/api/foods/:id",getIndex,(req,res)=>{
+  const body = req.body
+  console.log(body)
+  const foodId = req.foodID
+  foods[foodId]={id:foodId, ...body}
+  res.status(201).send("Put done")
+})
+app.patch("/api/foods/:id",getIndex,(req,res)=>{
+  const body = req.body
+  const foodId=req.foodID
+  foods[foodId]={...foods[foodId],...body}
+  return res.status(201).send("patch work done")
+})
+app.delete("/api/foods/:id",getIndex,(req,res)=>{
+   const foodId =req.foodId
+   foods.splice(foodId,1)
+   return res.send("Delete work done !")
+})
