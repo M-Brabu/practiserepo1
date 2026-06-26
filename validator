@@ -1,0 +1,21 @@
+export const validatorSchemaFood = {
+    name:{
+         isEmpty:{
+            errorMessage:"Name cant be empty "
+         },
+         isLength:{
+            options:{min:2,max:15},
+            er,
+            errorMessage:"name must contain atleast 2 and maximum of 15 character"
+         },
+    },
+    price:{
+        isEmpty:{
+            errorMessage:"Price cant be Empty"
+        },
+        isNaN:{
+            errorMessage:"price must be in number"
+        }
+
+    }
+}
